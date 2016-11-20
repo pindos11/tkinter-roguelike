@@ -59,9 +59,9 @@ class MainGame:
         try:
             curpos=(self.curfpos[0]+side[0],self.curfpos[1]+side[1])
             fld=self.world[curpos]
-            print(1)
+            
         except:
-            print(2)
+            
             curpos=(self.curfpos[0]+side[0],self.curfpos[1]+side[1])
             random.seed()
             vil = random.randint(0,4)
