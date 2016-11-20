@@ -5,32 +5,25 @@ from Monster import *
 from NPC import *
 from Player import *
 from quest import*
+from Drawing import*
 
 import math
 import tkinter
 class MainGame:
     def __init__(self):
         self.started = 0
-        self.mobs_c=[]
-        self.npcs_c=[]
         self.qposes = []
-        self.mobhp_c = []
         self.curquests = []
         self.state='move'
         self.curf=Field(10,10,1,1)
         self.world={(0,0):self.curf}
         self.curfpos=(0,0)
-        self.mainwindow=tkinter.Tk()
-        self.mainwindow.geometry('800x600+0+0')
-        self.canv = tkinter.Canvas(self.mainwindow,width=800,height=600)
-        self.canv.place(x=0,y=0)
-        self.draw_field()
+        self.Drawing = Drawing(self.curf)
         self.bind_moves()
-        self.msg_log=[]
-        self.player = Player(self.mainwindow)
-        self.draw_gui()
-        self.draw_npcs()
-        self.mainwindow.mainloop()
+        self.player = Player(self.Drawing.mainwindow)
+        self.Drawing.draw_gui(self.player,self.curfpos,self.world,self.qposes)
+        self.Drawing.draw_npcs(self.curf.npcs)
+        self.Drawing.mainwindow.mainloop()
 
     def create_mobs(self,field):
         random.seed()
@@ -58,140 +51,9 @@ class MainGame:
                 field.add_monster(Monster(self.player,mob_type,(mposx,mposy)))
                 ctr+=1
 
-    def draw_npcs(self):
-        for i in self.npcs_c:
-            self.canv.delete(i)
-        self.npcs_c=[]
-        self.npcimgs=[]
-        npcs=self.curf.npcs
-        for i in npcs:
-            self.npcimgs.append(tkinter.PhotoImage(file='images/chars/npc/'+i.ntype+'.gif'))
-            self.npcs_c.append(self.canv.create_image((i.posx*60,i.posy*60),image=self.npcimgs[len(self.npcimgs)-1],anchor='nw'))
-    def draw_monsters(self):
-        for i in self.mobs_c:
-            self.canv.delete(i)
-        for i in self.mobhp_c:
-            self.canv.delete(i)
-        self.mobs_c = []
-        self.mobhp_c = []
-        self.mgimgs=[]
-        mobs=self.curf.ret_monsters()
-        for i in mobs:
-            self.mgimgs.append(tkinter.PhotoImage(file='images/chars/mobs/'+i.model+'.gif'))
-            self.mobs_c.append(self.canv.create_image((i.posx*60,i.posy*60),image=self.mgimgs[len(self.mgimgs)-1],anchor='nw'))
-            self.mobhp_c.append(self.canv.create_rectangle(i.posx*60,i.posy*60,i.posx*60+50,i.posy*60+2,fill='white',outline='red'))
-            self.mobhp_c.append(self.canv.create_rectangle(i.posx*60,i.posy*60,i.posx*60+50*(i.health/i.maxhealth),i.posy*60+2,fill='red',outline='red'))
-            
-    def draw_gui(self):
-        self.canv.create_text((610,2),text="Moves log",anchor='nw')
-        self.msgboximg=tkinter.PhotoImage(file='images/gui/msg.png')
-        self.msgboxic=self.canv.create_image((600,20),image=self.msgboximg,anchor='nw')
-        #all text in img after img
-        self.msgbox=[]
-        for i in range(0,6):
-            self.msgbox.append(self.canv.create_text((610,30+i*14),text='',anchor='nw'))
-        self.wpnimgc = 1000
-        self.armimgc = 1000
-        self.utlimgc = 1000
-        self.canv.create_text((610,132),text="Status",anchor='nw')
-        self.statusboximg=tkinter.PhotoImage(file='images/gui/stats.png')
-        self.statusboxic=self.canv.create_image((600,150),image=self.statusboximg,anchor='nw')
-        plr=self.player
-        self.canv.create_rectangle(610,160,700,175,fill='white',outline='red')
-        self.canv.create_rectangle(610,160,610+90*(plr.health/plr.maxhealth),175,fill='red',outline='red')
-        self.canv.create_text((610,160),text='Health: '+str(round(plr.health,1))+'/'+str(plr.maxhealth),anchor='nw')
-        self.canv.create_text((610,200),text='Strength: '+str(plr.strength),anchor='nw')
-        self.canv.create_text((610,215),text='Dexterity: '+str(plr.dexterity),anchor='nw')
-        self.canv.create_text((610,230),text='Endurance: '+str(plr.endurance),anchor='nw')
-        self.canv.create_text((710,160),text='Exp '+str(plr.exp)+'/'+str(plr.nexp),anchor='nw')
-        self.canv.create_text((610,185),text='Level: '+str(plr.level),anchor='nw')
-        self.canv.create_text((710,185),text='Damage: '+str(plr.damage),anchor='nw')
-        self.canv.create_text((710,200),text='Armor: '+str(plr.armor),anchor='nw')
-        self.canv.create_text((700,215),text='You are in '+str(self.curfpos),anchor='nw')
-        
-        self.invboximg = tkinter.PhotoImage(file='images/gui/stats.png')
-        self.inventimg = tkinter.PhotoImage(file='images/gui/inv_box.png')
-        self.invboxc=self.canv.create_image((600,280),image=self.invboximg,anchor='nw')
-        self.invbox1=self.canv.create_image((608,322),image=self.inventimg,anchor='nw')
-        self.invbox2=self.canv.create_image((670,322),image=self.inventimg,anchor='nw')
-        self.invbox3=self.canv.create_image((732,322),image=self.inventimg,anchor='nw')
-        self.q_logt = self.canv.create_text((605,390),text='Minimap (quest NPC - blue):',anchor='nw')
-        #if(len(self.qposes)>0):
-         #   qposc = []
-          #  for i in self.qposes:
-           #     qposc.append(self.canv.create_text((610,420+self.qposes.index(i)*15),text=str(i),anchor='nw'))
-                
-        self.draw_minimap()
-        #items
-        self.invtext=self.canv.create_text((620,300),text='Inventory',anchor='nw')
-        if(len(plr.inventory)>0):
-            for i in plr.inventory:
-                if(i.itype=='wpn'):
-                    self.wpnimg=tkinter.PhotoImage(file='images/items/'+i.model+'.gif')
-                    if(self.wpnimgc!=1000):
-                        self.canv.itemconfig(self.wpnimgc,image=self.wpnimg)
-                    else:
-                        self.wpnimgc=self.canv.create_image((623,337),image=self.wpnimg,anchor='nw')
-                if(i.itype=='arm'):
-                    self.armimg=tkinter.PhotoImage(file='images/items/'+i.model+'.gif')
-                    if(self.armimgc!=1000):
-                        self.canv.itemconfig(self.armimgc,image=self.armimg)
-                    else:
-                        self.armimgc=self.canv.create_image((685,337),image=self.armimg,anchor='nw')
-                if(i.itype=='utl'):
-                    self.utlimg=tkinter.PhotoImage(file='images/items/'+i.model+'.gif')
-                    if(self.utlimgc!=1000):
-                        self.canv.itemconfig(self.utlimgc,image=self.utlimg)
-                    else:
-                        self.utlimgc=self.canv.create_image((747,337),image=self.utlimg,anchor='nw')
-                    self.chargec=self.canv.create_text((747,337),text=i.charges,anchor='nw')
-
-
-    def draw_minimap(self):
-        wrd = self.world
-        mpos = (700,500)
-        mmsize=8
-        offset = (self.curfpos[0]*mmsize,self.curfpos[1]*mmsize)
-        cpos = self.curfpos
-        mpos = (mpos[0]-offset[0],mpos[1]-offset[1])
-        for pos,fld in wrd.items():
-            if(pos[0]>10+cpos[0] or pos[0]<-10+self.curfpos[0] or pos[1]>10+cpos[1] or pos[1]<-10+self.curfpos[1]):
-                continue
-            color = 'white'
-            if(fld.ztype==1):
-                color='green'
-            elif(fld.ztype==2):
-                color='yellow'
-            elif(fld.ztype==3):
-                color='red'
-            elif(fld.ztype==4):
-                color='black'
-            if(pos in self.qposes):
-                color = 'blue2'
-            if(pos==self.curfpos):
-                color = 'white'
-            self.canv.create_rectangle((mpos[0]+pos[0]*mmsize,mpos[1]+pos[1]*mmsize,mpos[0]+pos[0]*mmsize+mmsize,mpos[1]+pos[1]*mmsize+mmsize),fill=color)
+    
                     
-    def edit_msg(self,text):
-        if(text!=''):
-            self.msg_log.append(text)
-        if(len(self.msg_log)>6):
-            self.msg_log=self.msg_log[len(self.msg_log)-6:len(self.msg_log)]
-        for i in range(0,6):
-            if(len(self.msg_log)==0):
-                break
-            try:
-                outtext=self.msg_log[i]
-            except:
-                break
-            color='black'
-            if('Received' in outtext):
-                color='red'
-            elif('Dealt' in outtext):
-                color='green'
-            elif('Entering' in outtext):
-                color='blue'
-            self.canv.itemconfig(self.msgbox[i],text=outtext,fill=color)
+    
 
     def make_field(self,side):
         try:
@@ -229,47 +91,15 @@ class MainGame:
             self.world.update([(curpos,fld)])
             self.curf=fld
             self.curfpos=curpos
-            self.draw_field()
-            self.draw_gui()
-            self.draw_monsters()
-            self.draw_npcs()
-            self.edit_msg('')
+            self.Drawing.draw_field(self.curf)
+            self.Drawing.draw_gui(self.player,self.curfpos,self.world,self.qposes)
+            self.Drawing.draw_monsters(self.curf.ret_monsters())
+            self.Drawing.draw_npcs(self.curf.npcs)
+            self.Drawing.edit_msg('')
             if(side!=(0,0)):
-                self.edit_msg("Entering in: "+str(curpos))
+                self.Drawing.edit_msg("Entering in: "+str(curpos))
 
-    def draw_field(self):
-        self.canv.delete('all')
-        self.terrain = []
-        self.lootimgs=[]
-        self.texlist={}
-        tlist=self.curf.terrains()
-        for i in tlist:
-            if('3_h' in i):
-                self.texlist.update([(i,tkinter.PhotoImage(file='images/buildings/'+str(i)+'.gif'))])
-            else:    
-                self.texlist.update([(i,tkinter.PhotoImage(file='images/60x60terrain/'+str(i)+'.gif'))])
-        for i in range(0,10):
-            tmp = []
-            self.terrain.append(tmp)
-            for j in range(0,10):
-                ttype=self.curf.cur_cond()[i][j].get_terrain()
-                if('3_h' in ttype):
-                    self.terrain[i].append(self.canv.create_image((i*60,j*60),image=self.texlist['1'],anchor='nw'))
-                    self.terrain[i].append(self.canv.create_image((i*60,j*60),image=self.texlist[ttype],anchor='nw'))
-                else:    
-                    self.terrain[i].append(self.canv.create_image((i*60,j*60),image=self.texlist[ttype],anchor='nw'))
-                if(self.curf.cur_cond()[i][j].hasloot==1):
-                    loot = self.curf.cur_cond()[i][j].loot
-                    self.lootimgs.append(tkinter.PhotoImage(file='images/items/'+loot.model+'.gif'))
-                    self.canv.create_image((i*60,j*60),image=self.lootimgs[len(self.lootimgs)-1],anchor='nw')
-        self.draw_player()
     
-    def draw_player(self):
-        self.psprite=tkinter.PhotoImage(file='images/chars/player/girl.gif')        
-        pposx = self.curf.pposx
-        pposy = self.curf.pposy
-        self.plabel=self.canv.create_image((pposx*60,pposy*60),image=self.psprite,tags='player',anchor='nw')
-
     def get_dist(self,x2,x1,y2,y1):
         return(math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)))
     #   2
@@ -369,8 +199,8 @@ class MainGame:
                 if(plr.health<=0):
                     self.finish_game()
                 self.make_field((0,0))
-                self.edit_msg('Received '+str(fin_damage)+' damage')
-        self.draw_monsters()
+                self.Drawing.edit_msg('Received '+str(fin_damage)+' damage')
+        self.Drawing.draw_monsters(self.curf.ret_monsters())
 
     def attack_mob(self,pos):
         random.seed()
@@ -384,19 +214,19 @@ class MainGame:
         plr = self.player
         dodge = random.randint(0,99)+tmobi.dodge_chance
         if(dodge>=100):
-            self.edit_msg('You missed')
+            self.Drawing.edit_msg('You missed')
             return
         fin_damage=plr.damage
         crit_bonus = plr.crit_addmul*0.01*plr.damage
         crit = random.randint(0,99)+plr.crit_chance
         if(crit>=100):
             fin_damage+=crit_bonus
-            self.edit_msg('Critical! Plus '+str(plr.crit_addmul)+'% damage')
+            self.Drawing.edit_msg('Critical! Plus '+str(plr.crit_addmul)+'% damage')
         fin_damage-=tmobi.nat_armor
         if(fin_damage<0):
             fin_damage=0
         tmobi.health-=fin_damage
-        self.edit_msg('Dealt '+str(fin_damage)+' damage')
+        self.Drawing.edit_msg('Dealt '+str(fin_damage)+' damage')
         if(tmobi.health<=0):
             rewexp=tmobi.rewardexp
             drop=0
@@ -413,13 +243,13 @@ class MainGame:
                     dropped=Item('utl',plr.level)
                 self.curf.cur_cond()[tmobi.posx][tmobi.posy].place_loot(dropped)
             self.upd_quest(tmobi.model)
-            self.edit_msg((tmobi.model+' is slain').capitalize())
+            self.Drawing.edit_msg((tmobi.model+' is slain').capitalize())
             self.curf.kill_monster(tmobi)
             self.unbind_moves()
             text = self.player.add_exp(rewexp)
             self.bind_moves()
             self.make_field((0,0))
-            self.edit_msg(text)
+            self.Drawing.edit_msg(text)
 
     def upd_quest(self,mob):
         for i in self.curquests:
@@ -473,7 +303,7 @@ class MainGame:
                 dropped=Item('utl',plr.level+2)
             self.curf.cur_cond()[pposx][pposy].place_loot(dropped)
             self.make_field((0,0))
-            self.edit_msg('')
+            self.Drawing.edit_msg('')
 
         elif(tnpci.quest.completed==2):
             self.qwindow = tkinter.Toplevel()
@@ -490,7 +320,7 @@ class MainGame:
             self.qposes.append(self.curfpos)
         #print(len(self.curquests))
         self.make_field((0,0))
-        self.edit_msg('')
+        self.Drawing.edit_msg('')
         self.qwindow.quit()
         self.qwindow.destroy()
 
@@ -538,9 +368,8 @@ OLOLO.'''
                     self.interact_npc((pposx,pposy-1))
                     return
                 self.curf.move_player(pposx,pposy-1)
-                pposx = self.curf.pposx
-                pposy = self.curf.pposy
-                self.canv.coords(self.plabel,(pposx*60,pposy*60))
+                
+                self.Drawing.draw_player(self.curf)
                 self.bind_moves()
         if(event.char=='s'):
             if(pposy+1>self.curf.sizey-1):
@@ -557,7 +386,7 @@ OLOLO.'''
                 self.curf.move_player(pposx,pposy+1)
                 pposx = self.curf.pposx
                 pposy = self.curf.pposy
-                self.canv.coords(self.plabel,(pposx*60,pposy*60))
+                self.Drawing.draw_player(self.curf)
         if(event.char=='a'):
             if(pposx-1<0):
                 self.make_field((-1,0))
@@ -573,7 +402,7 @@ OLOLO.'''
                 self.curf.move_player(pposx-1,pposy)
                 pposx = self.curf.pposx
                 pposy = self.curf.pposy
-                self.canv.coords(self.plabel,(pposx*60,pposy*60))
+                self.Drawing.draw_player(self.curf)
         if(event.char=='d'):
             if(pposx+1>self.curf.sizex-1):
                 self.make_field((1,0))
@@ -589,7 +418,7 @@ OLOLO.'''
                 self.curf.move_player(pposx+1,pposy)
                 pposx = self.curf.pposx
                 pposy = self.curf.pposy
-                self.canv.coords(self.plabel,(pposx*60,pposy*60))
+                self.Drawing.draw_player(self.curf)
         if(event.char=='3'):
             itms=self.player.inventory
             has_bottle=0
@@ -622,7 +451,7 @@ OLOLO.'''
                     if(self.curf.cur_cond()[w[0]][w[1]].get_terrain()=='3_h_w'):
                         plr.inventory[2].charges=plr.inventory[2].max_charges
                         self.make_field((0,0))
-                        self.edit_msg('')
+                        self.Drawing.edit_msg('')
                         break
         if(event.char=='c'):
             pposx = self.curf.pposx
@@ -635,7 +464,7 @@ OLOLO.'''
                     if(i.itype==nitype):
                         o_item=i
                         break
-                self.pick_thingw=tkinter.Toplevel(self.mainwindow)
+                self.pick_thingw=tkinter.Toplevel(self.Drawing.mainwindow)
                 self.pick_thingw.title("Picking item")
                 self.pick_thingw.geometry('550x200+100+100')
                 o_name=o_item.name
@@ -697,7 +526,7 @@ OLOLO.'''
                         if(self.curf.cur_cond()[w[0]][w[1]].get_terrain()=='3_h_w'):
                             plr.inventory[2].charges=plr.inventory[2].max_charges
                             self.make_field((0,0))
-                            self.edit_msg('')
+                            self.Drawing.edit_msg('')
                             break
         self.move_mobs()
 
@@ -712,38 +541,38 @@ OLOLO.'''
             pposy = self.curf.pposy
             self.curf.cur_cond()[pposx][pposy].place_loot(to_drop)
             self.make_field((0,0))
-            self.edit_msg('')
+            self.Drawing.edit_msg('')
             self.pick_thingw.quit()
             self.pick_thingw.destroy()
                 
     def add_exp(self,event):
         text=self.player.add_exp(5)
         self.make_field((0,0))
-        self.edit_msg(text)
+        self.Drawing.edit_msg(text)
     def bind_moves(self):
-        self.mainwindow.bind('w',self.move)
-        self.mainwindow.bind('s',self.move)
-        self.mainwindow.bind('a',self.move)
-        self.mainwindow.bind('d',self.move)
-        self.mainwindow.bind('3',self.move)
-        self.mainwindow.bind('x',self.move)
-        self.mainwindow.bind('c',self.move)
+        self.Drawing.mainwindow.bind('w',self.move)
+        self.Drawing.mainwindow.bind('s',self.move)
+        self.Drawing.mainwindow.bind('a',self.move)
+        self.Drawing.mainwindow.bind('d',self.move)
+        self.Drawing.mainwindow.bind('3',self.move)
+        self.Drawing.mainwindow.bind('x',self.move)
+        self.Drawing.mainwindow.bind('c',self.move)
 
     def unbind_moves(self):
-        self.mainwindow.unbind('w')
-        self.mainwindow.unbind('s')
-        self.mainwindow.unbind('a')
-        self.mainwindow.unbind('d')
-        self.mainwindow.unbind('3')
-        self.mainwindow.unbind('x')
-        self.mainwindow.unbind('c')
-        #self.mainwindow.bind('h',self.add_exp)
+        self.Drawing.mainwindow.unbind('w')
+        self.Drawing.mainwindow.unbind('s')
+        self.Drawing.mainwindow.unbind('a')
+        self.Drawing.mainwindow.unbind('d')
+        self.Drawing.mainwindow.unbind('3')
+        self.Drawing.mainwindow.unbind('x')
+        self.Drawing.mainwindow.unbind('c')
+        #self.Drawing.mainwindow.bind('h',self.add_exp)
     def finish_game(self):
-        self.canv.delete('all')
-        you_dead=tkinter.Label(self.mainwindow,text='You dead')
+        self.Drawing.canv.delete('all')
+        you_dead=tkinter.Label(self.Drawing.mainwindow,text='You dead')
         you_dead.place(x=200,y=200)
-        self.mainwindow.unbind('w')
-        self.mainwindow.unbind('s')
-        self.mainwindow.unbind('a')
-        self.mainwindow.unbind('d')
+        self.Drawing.mainwindow.unbind('w')
+        self.Drawing.mainwindow.unbind('s')
+        self.Drawing.mainwindow.unbind('a')
+        self.Drawing.mainwindow.unbind('d')
         raise
