@@ -568,7 +568,7 @@ OLOLO.'''
         self.Drawing.mainwindow.unbind('c')
         #self.Drawing.mainwindow.bind('h',self.add_exp)
     def finish_game(self):
-        self.canv.delete('all')
+        self.Drawing.canv.delete('all')
         you_dead=tkinter.Label(self.Drawing.mainwindow,text='You dead')
         you_dead.place(x=200,y=200)
         self.Drawing.mainwindow.unbind('w')
