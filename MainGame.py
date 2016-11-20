@@ -59,7 +59,9 @@ class MainGame:
         try:
             curpos=(self.curfpos[0]+side[0],self.curfpos[1]+side[1])
             fld=self.world[curpos]
+            
         except:
+            
             curpos=(self.curfpos[0]+side[0],self.curfpos[1]+side[1])
             random.seed()
             vil = random.randint(0,4)
@@ -86,9 +88,10 @@ class MainGame:
         else:
             newpx=self.curf.pposx
             newpy=self.curf.pposy
+        self.world.update([(curpos,fld)])
         if(fld.cur_cond()[newpx][newpy].get_terrain() in fld.walkable):
             fld.move_player(newpx,newpy)
-            self.world.update([(curpos,fld)])
+            
             self.curf=fld
             self.curfpos=curpos
             self.Drawing.draw_field(self.curf)
