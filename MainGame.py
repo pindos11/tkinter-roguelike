@@ -113,77 +113,17 @@ class MainGame:
         mobs=self.curf.ret_monsters()
         pposx = float(self.curf.pposx)
         pposy = float(self.curf.pposy)
-        for i in mobs:
+        for i in mobs:          
             pdist=self.get_dist(pposx,i.posx,pposy,i.posy)
             if(pdist<3 and pdist>1):
-                px=i.posx
-                py=i.posy
-                dists=[]
-                for z in range(1,5):
-                    donot=0
-                    if(z==1 and px>0):
-                        for h in mobs:
-                            if(h.posx==px-1 and h.posy==py):
-                                donot=1
-                                dists.append(100)
-                                break
-                        if(donot==1):
-                            break
-                        if(self.curf.cur_cond()[px-1][py].get_terrain() in self.curf.walkable):
-                            dists.append(self.get_dist(pposx,px-1,pposy,py))
-                        else:
-                            dists.append(101)
-                    elif(z==2 and py>0):
-                        for h in mobs:
-                            if(h.posx==px and h.posy==py-1):
-                                donot=1
-                                dists.append(100)
-                                break
-                        if(donot==1):
-                            break
-                        if(self.curf.cur_cond()[px][py-1].get_terrain() in self.curf.walkable):
-                            dists.append(self.get_dist(pposx,px,pposy,py-1))
-                        else:
-                            dists.append(101)
-                    elif(z==3 and px<self.curf.sizex-1):
-                        for h in mobs:
-                            if(h.posx==px+1 and h.posy==py):
-                                donot=1
-                                dists.append(100)
-                                break
-                        if(donot==1):
-                            break
-                        if(self.curf.cur_cond()[px+1][py].get_terrain() in self.curf.walkable):
-                            dists.append(self.get_dist(pposx,px+1,pposy,py))
-                        else:
-                            dists.append(101)
-                    elif(z==4 and py<self.curf.sizey-1):
-                        for h in mobs:
-                            if(h.posx==px and h.posy==py+1):
-                                donot=1
-                                dists.append(100)
-                                break
-                        if(donot==1):
-                            break
-                        if(self.curf.cur_cond()[px][py+1].get_terrain() in self.curf.walkable):
-                            dists.append(self.get_dist(pposx,px,pposy,py+1))
-                        else:
-                            dists.append(101)
-                    else:
-                        dists.append(100)
-                min_dist=100
-                for z in dists:
-                    if(z<min_dist):
-                        min_dist=z
-                if(dists.index(min_dist)==1-1):
-                    px-=1
-                elif(dists.index(min_dist)==2-1):
-                    py-=1
-                elif(dists.index(min_dist)==3-1):
-                    px+=1
-                elif(dists.index(min_dist)==4-1):
-                    py+=1
-                i.move(px,py)
+                poses = i.get_where_to_go((0,self.curf.sizex),(0,self.curf.sizey),(pposx,pposy),mobs)
+                pos = poses[0]
+                if self.curf.cur_cond()[pos[0]][pos[1]].get_terrain() in self.curf.walkable:
+                    i.move(pos[0],pos[1])
+                else:
+                    pos = poses[1]
+                    if self.curf.cur_cond()[pos[0]][pos[1]].get_terrain() in self.curf.walkable:
+                        i.move(pos[0],pos[1])
             if(pdist==1):
                 plr = self.player
                 dodge = random.randint(0,99)+plr.dodge_chance

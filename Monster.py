@@ -1,4 +1,5 @@
 import random
+import math
 class Monster:
     def __init__(self,player,mtype,pos):
         #player
@@ -78,6 +79,86 @@ class Monster:
     def move(self,newx,newy):
         self.posx=newx
         self.posy=newy
+
+    def get_where_to_go(self,x_rest,y_rest,plr_pos,mobs):
+        result = []
+        result.append((self.posx+1,self.posy))
+        result.append((self.posx-1,self.posy))
+        result.append((self.posx,self.posy+1))
+        result.append((self.posx,self.posy-1))
+        possible_results = []
+        filtered_results = []
+        mobs_near = []
+        ok_pos1 = 0
+        ok_pos2 = 0
+        go_pos = [self.posx,self.posy]
+        go_pos2 = [self.posx,self.posy]
+        for i in result:
+            if i[0]<x_rest[0] or i[1]<y_rest[0] or i[0]>=x_rest[1] or i[1]>=y_rest[1]:
+                continue
+            filtered_results.append(i)
+
+        for i in mobs:
+            for j in filtered_results:
+                if i.posx == j[0] and i.posy == j[1]:
+                    mobs_near.append(j)
+                    
+
+        for i in filtered_results:
+            ok = 1
+            for j in mobs_near:
+                if j[0]==i[0] and j[1]==i[1]:
+                    ok = 0
+                    
+            if ok==1:
+                possible_results.append(i)
+        
+        go_px = self.posx - plr_pos[0]
+        go_py = self.posy - plr_pos[1]
+        if go_px == 0:
+            if go_py<0:
+                go_pos[1] = go_pos[1]+1
+            elif go_py>0:
+                go_pos[1] = go_pos[1]-1
+        if go_py == 0:
+            if go_px<0:
+                go_pos[0] = go_pos[0]+1
+            elif go_px>0:
+                go_pos[0] = go_pos[0]-1
+        if go_py != 0 and go_px !=0:
+            ang = math.atan2(go_px,go_py)
+            ang += math.pi
+            if ang<math.pi/2:
+                go_pos[0]+=1
+                go_pos2[1]+=1
+            if ang>math.pi/2 and ang<math.pi:
+                go_pos[1]-=1
+                go_pos2[0]+=1
+            if ang>math.pi and ang<math.pi*3/2:
+                go_pos[0]-=1
+                go_pos2[1]-=1
+            if ang>math.pi*3/2:
+                go_pos[1]+=1
+                go_pos2[0]-=1
+
+        myresult = []
+        
+        for i in possible_results:
+            if i[0] == go_pos[0] and i[1] == go_pos[1]:
+                ok_pos1 = 1
+        for i in possible_results:
+            if i[0] == go_pos2[0] and i[1] == go_pos2[1]:
+                ok_pos2 = 1
+        if ok_pos1 == 1:
+            myresult.append(go_pos)
+        else:
+            myresult.append([self.posx,self.posy])
+
+        if ok_pos2 == 1:
+            myresult.append(go_pos2)
+        else:
+            myresult.append([self.posx,self.posy])
+        return myresult #go_pos
         
     def upd_stats(self):
         #str
