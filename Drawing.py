@@ -1,15 +1,21 @@
 import tkinter
+from PIL import Image
+from PIL import ImageTk
 class Drawing:
-    def __init__(self,curf):
+    def __init__(self,curf,plr):
         self.mainwindow=tkinter.Tk()
-        self.mainwindow.geometry('800x600+0+0')
-        self.canv = tkinter.Canvas(self.mainwindow,width=800,height=600)
-        self.canv.place(x=0,y=0)
-        self.draw_field(curf)
+        self.mainwindow.geometry('1280x720+0+0')
+        self.canv = tkinter.Canvas(self.mainwindow)
+        self.canv.pack(fill='both', expand=True)
+        self.win_hgt = 720
+        self.win_len = 1280
         self.mobs_c=[]
         self.npcs_c=[]
         self.mobhp_c = []
         self.msg_log=[]
+        self.pic_size = self.win_hgt/curf.sizey
+        self.pic_size = int(self.pic_size)
+        self.draw_field(curf,plr)
         
 	
     def get_mwin(self):
@@ -33,10 +39,14 @@ class Drawing:
         self.mobhp_c = []
         self.mgimgs=[]
         for i in mobs:
-            self.mgimgs.append(tkinter.PhotoImage(file='images/chars/mobs/'+i.model+'.gif'))
-            self.mobs_c.append(self.canv.create_image((i.posx*60,i.posy*60),image=self.mgimgs[len(self.mgimgs)-1],anchor='nw'))
-            self.mobhp_c.append(self.canv.create_rectangle(i.posx*60,i.posy*60,i.posx*60+50,i.posy*60+2,fill='white',outline='red'))
-            self.mobhp_c.append(self.canv.create_rectangle(i.posx*60,i.posy*60,i.posx*60+50*(i.health/i.maxhealth),i.posy*60+2,fill='red',outline='red'))
+            mob_dir = i.mov_pos
+            iimg = Image.open('images/chars/mobs/'+i.model+'/mob_'+mob_dir+'.png')
+            iimg.resize((self.pic_size,self.pic_size), Image.ANTIALIAS)
+            img = ImageTk.PhotoImage(iimg)        
+            self.mgimgs.append(img)
+            self.mobs_c.append(self.canv.create_image(((i.posx-0.5)*self.pic_size,(i.posy-1)*self.pic_size),image=self.mgimgs[len(self.mgimgs)-1],anchor='nw'))
+            #self.mobhp_c.append(self.canv.create_rectangle(i.posx*self.pic_size,i.posy*self.pic_size,i.posx*self.pic_size+50,i.posy*60+2,fill='white',outline='red'))
+            #self.mobhp_c.append(self.canv.create_rectangle(i.posx*self.pic_size,i.posy*self.pic_size,i.posx*self.pic_size+50*(i.health/i.maxhealth),i.posy*60+2,fill='red',outline='red'))
             
     def draw_gui(self,plr,curfpos,wrd,qposes):
         self.canv.create_text((610,2),text="Moves log",anchor='nw')
@@ -126,38 +136,51 @@ class Drawing:
                 color = 'white'
             self.canv.create_rectangle((mpos[0]+pos[0]*mmsize,mpos[1]+pos[1]*mmsize,mpos[0]+pos[0]*mmsize+mmsize,mpos[1]+pos[1]*mmsize+mmsize),fill=color)
     
-    def draw_field(self,curf):
+    def draw_field(self,curf,plr):
         self.canv.delete('all')
         self.terrain = []
         self.lootimgs=[]
         self.texlist={}
+        zoom = 1
         tlist=curf.terrains()
+        
         for i in tlist:
             if('3_h' in i):
-                self.texlist.update([(i,tkinter.PhotoImage(file='images/buildings/'+str(i)+'.gif'))])
-            else:    
-                self.texlist.update([(i,tkinter.PhotoImage(file='images/60x60terrain/'+str(i)+'.gif'))])
-        for i in range(0,10):
+                iimg = Image.open('images/buildings/'+str(i)+'.gif')
+                iimg.resize((self.pic_size,self.pic_size), Image.ANTIALIAS)
+                img = ImageTk.PhotoImage(iimg)
+                self.texlist.update([(i,img)])
+            else:
+                iimg = Image.open('images/60x60terrain/'+str(i)+'.gif')
+                iimg.resize((self.pic_size,self.pic_size), Image.ANTIALIAS)
+                img = ImageTk.PhotoImage(iimg)
+                self.texlist.update([(i,img)])
+        for i in range(0,curf.sizex):
             tmp = []
             self.terrain.append(tmp)
-            for j in range(0,10):
+            for j in range(0,curf.sizey):
                 ttype=curf.cur_cond()[i][j].get_terrain()
                 if('3_h' in ttype):
-                    self.terrain[i].append(self.canv.create_image((i*60,j*60),image=self.texlist['1'],anchor='nw'))
-                    self.terrain[i].append(self.canv.create_image((i*60,j*60),image=self.texlist[ttype],anchor='nw'))
+                    self.terrain[i].append(self.canv.create_image((i*self.pic_size,j*self.pic_size),image=self.texlist['1'],anchor='nw'))
+                    self.terrain[i].append(self.canv.create_image((i*self.pic_size,j*self.pic_size),image=self.texlist[ttype],anchor='nw'))
                 else:    
-                    self.terrain[i].append(self.canv.create_image((i*60,j*60),image=self.texlist[ttype],anchor='nw'))
+                    self.terrain[i].append(self.canv.create_image((i*self.pic_size,j*self.pic_size),image=self.texlist[ttype],anchor='nw'))
                 if(curf.cur_cond()[i][j].hasloot==1):
                     loot = curf.cur_cond()[i][j].loot
                     self.lootimgs.append(tkinter.PhotoImage(file='images/items/'+loot.model+'.gif'))
-                    self.canv.create_image((i*60,j*60),image=self.lootimgs[len(self.lootimgs)-1],anchor='nw')
-        self.draw_player(curf)
+                    self.canv.create_image((i*self.pic_size,j*self.pic_size),image=self.lootimgs[len(self.lootimgs)-1],anchor='nw')
+        self.draw_player(curf,plr)
     
-    def draw_player(self,curf):
-        self.psprite=tkinter.PhotoImage(file='images/chars/player/girl.gif')        
+    def draw_player(self,curf,plr):
+        img_name = 'images/chars/player/plr_'
+        img_name += plr.move_dir
+        img_name += ".png"
+        iimg = Image.open(img_name)
+        iimg.resize((self.pic_size,self.pic_size), Image.ANTIALIAS)
+        self.psprite = ImageTk.PhotoImage(iimg)        
         pposx = curf.pposx
         pposy = curf.pposy
-        self.plabel=self.canv.create_image((pposx*60,pposy*60),image=self.psprite,tags='player',anchor='nw')
+        self.plabel=self.canv.create_image(((pposx-0.5)*self.pic_size,(pposy-1)*self.pic_size),image=self.psprite,tags='player',anchor='nw')
 		
     def edit_msg(self,text):
         if(text!=''):

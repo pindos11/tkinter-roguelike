@@ -15,12 +15,13 @@ class MainGame:
         self.qposes = []
         self.curquests = []
         self.state='move'
-        self.curf=Field(10,10,1,1)
+        self.curf=Field(30,20,1,1)
         self.world={(0,0):self.curf}
         self.curfpos=(0,0)
-        self.Drawing = Drawing(self.curf)
+        self.player = Player()
+        self.Drawing = Drawing(self.curf,self.player)
+        self.player.set_master(self.Drawing.mainwindow)
         self.bind_moves()
-        self.player = Player(self.Drawing.mainwindow)
         self.Drawing.draw_gui(self.player,self.curfpos,self.world,self.qposes)
         self.Drawing.draw_npcs(self.curf.npcs)
         self.Drawing.mainwindow.mainloop()
@@ -33,14 +34,16 @@ class MainGame:
             return
         mobs=[]
         if(zone==1):
-            mobs.append('goblin')
-            mobs.append('rat')
+            #mobs.append('goblin')
+            #mobs.append('rat')
+
+            mobs.append('skele_war')
         elif(zone==3):
             mobs.append('drago')
-            mobs.append('knight_f')
+            #mobs.append('knight_f')
         elif(zone==2):
             mobs.append('skele_war')
-            mobs.append('cobra')
+            #mobs.append('cobra')
         ctr=0
         fld=field.cur_cond()
         while(ctr<num):
@@ -70,7 +73,7 @@ class MainGame:
                 vil=0
             else:
                 vil = 2
-            fld=Field(10,10,vil,ztype)
+            fld=Field(30,20,vil,ztype)
             if(vil==0 or ztype!=1):
                 self.create_mobs(fld)
         if(side==(0,1)):
@@ -94,7 +97,7 @@ class MainGame:
             
             self.curf=fld
             self.curfpos=curpos
-            self.Drawing.draw_field(self.curf)
+            self.Drawing.draw_field(self.curf,self.player)
             self.Drawing.draw_gui(self.player,self.curfpos,self.world,self.qposes)
             self.Drawing.draw_monsters(self.curf.ret_monsters())
             self.Drawing.draw_npcs(self.curf.npcs)
@@ -115,7 +118,7 @@ class MainGame:
         pposy = float(self.curf.pposy)
         for i in mobs:          
             pdist=self.get_dist(pposx,i.posx,pposy,i.posy)
-            if(pdist<3 and pdist>1):
+            if(pdist<5 and pdist>1):
                 poses = i.get_where_to_go((0,self.curf.sizex),(0,self.curf.sizey),(pposx,pposy),mobs)
                 pos = poses[0]
                 if self.curf.cur_cond()[pos[0]][pos[1]].get_terrain() in self.curf.walkable:
@@ -298,7 +301,9 @@ OLOLO.'''
             mposes.append((i.posx,i.posy))
         for i in npcs:
             npcposes.append((i.posx,i.posy))
+        
         if(event.char=='w'):
+            self.player.set_move_dir("(0002)")
             if(pposy-1<0):
                 self.make_field((0,-1))
                 return
@@ -311,10 +316,10 @@ OLOLO.'''
                     self.interact_npc((pposx,pposy-1))
                     return
                 self.curf.move_player(pposx,pposy-1)
-                
-                self.Drawing.draw_player(self.curf)
+                self.Drawing.draw_player(self.curf, self.player)
                 self.bind_moves()
         if(event.char=='s'):
+            self.player.set_move_dir("(0000)")
             if(pposy+1>self.curf.sizey-1):
                 self.make_field((0,1))
                 return
@@ -329,8 +334,9 @@ OLOLO.'''
                 self.curf.move_player(pposx,pposy+1)
                 pposx = self.curf.pposx
                 pposy = self.curf.pposy
-                self.Drawing.draw_player(self.curf)
+                self.Drawing.draw_player(self.curf, self.player)
         if(event.char=='a'):
+            self.player.set_move_dir("(0001)")
             if(pposx-1<0):
                 self.make_field((-1,0))
                 return
@@ -345,8 +351,9 @@ OLOLO.'''
                 self.curf.move_player(pposx-1,pposy)
                 pposx = self.curf.pposx
                 pposy = self.curf.pposy
-                self.Drawing.draw_player(self.curf)
+                self.Drawing.draw_player(self.curf, self.player)
         if(event.char=='d'):
+            self.player.set_move_dir("(0003)")
             if(pposx+1>self.curf.sizex-1):
                 self.make_field((1,0))
                 return
@@ -361,7 +368,7 @@ OLOLO.'''
                 self.curf.move_player(pposx+1,pposy)
                 pposx = self.curf.pposx
                 pposy = self.curf.pposy
-                self.Drawing.draw_player(self.curf)
+                self.Drawing.draw_player(self.curf, self.player)
         if(event.char=='3'):
             itms=self.player.inventory
             has_bottle=0

@@ -22,6 +22,7 @@ class Monster:
         self.apply_type()
         self.fix_mob()
         self.maxhealth=self.health
+        self.mov_pos = "(0000)"
     def fix_mob(self):
         if(self.dodge_chance>15):
             self.dodge_chance=15    
@@ -77,8 +78,21 @@ class Monster:
         self.endurance = random.randint(0+self.level*mul,1+self.level*mul)
 
     def move(self,newx,newy):
+        deltax = self.posx-newx
+        deltay = self.posy-newy
         self.posx=newx
         self.posy=newy
+        #print("x: ",deltax," y: ",deltay)
+        if deltay!=0:
+            if deltay == -1:
+                self.mov_pos = "(0000)"
+            else:
+                self.mov_pos = "(0002)"
+        if deltax!=0:
+            if deltax == -1:
+                self.mov_pos = "(0003)"
+            else:
+                self.mov_pos = "(0001)"
 
     def get_where_to_go(self,x_rest,y_rest,plr_pos,mobs):
         result = []

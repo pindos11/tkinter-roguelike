@@ -1,7 +1,7 @@
 from Item import *
 import tkinter
 class Player:
-    def __init__(self,master):
+    def __init__(self):
         self.strength=0
         self.dexterity=0
         self.endurance=0
@@ -13,7 +13,6 @@ class Player:
         self.add_health=0
         self.add_damage=0
         self.add_armor=0
-        self.master=master
         self.inventory=[]
         self.inventory.append(Item('wpn',1))
         self.inventory.append(Item('arm',1))
@@ -25,7 +24,11 @@ class Player:
         self.preset_chars()
         self.upd_stats()
         self.health=self.maxhealth
+        self.move_dir = "(0000)"
 
+    def set_master(self,master):
+        self.master = master
+    
     def give_item(self,item):
         if(item.itype=='wpn'):
             to_ret=self.inventory[0]
@@ -144,3 +147,6 @@ class Player:
             self.health=self.maxhealth
         if(self.mh==1):
             self.health=self.maxhealth
+
+    def set_move_dir(self,movement):
+        self.move_dir = movement
