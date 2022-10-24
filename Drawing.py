@@ -5,10 +5,11 @@ class Drawing:
     def __init__(self,curf,plr):
         self.mainwindow=tkinter.Tk()
         self.mainwindow.geometry('1280x720+0+0')
+        #self.mainwindow.attributes("-fullscreen", True)
         self.canv = tkinter.Canvas(self.mainwindow)
         self.canv.pack(fill='both', expand=True)
-        self.win_hgt = 720
-        self.win_len = 1280
+        self.win_hgt = self.mainwindow.winfo_screenheight()
+        self.win_len = self.mainwindow.winfo_screenwidth()
         self.mobs_c=[]
         self.npcs_c=[]
         self.mobhp_c = []
@@ -44,11 +45,12 @@ class Drawing:
             iimg.resize((self.pic_size,self.pic_size), Image.ANTIALIAS)
             img = ImageTk.PhotoImage(iimg)        
             self.mgimgs.append(img)
-            self.mobs_c.append(self.canv.create_image(((i.posx-0.5)*self.pic_size,(i.posy-1)*self.pic_size),image=self.mgimgs[len(self.mgimgs)-1],anchor='nw'))
-            #self.mobhp_c.append(self.canv.create_rectangle(i.posx*self.pic_size,i.posy*self.pic_size,i.posx*self.pic_size+50,i.posy*60+2,fill='white',outline='red'))
-            #self.mobhp_c.append(self.canv.create_rectangle(i.posx*self.pic_size,i.posy*self.pic_size,i.posx*self.pic_size+50*(i.health/i.maxhealth),i.posy*60+2,fill='red',outline='red'))
+            self.mobs_c.append(self.canv.create_image(((i.posx)*self.pic_size,(i.posy-0.5)*self.pic_size),image=self.mgimgs[len(self.mgimgs)-1],anchor='nw'))
+            self.mobhp_c.append(self.canv.create_rectangle(i.posx*self.pic_size,(i.posy-0.5)*self.pic_size,i.posx*self.pic_size+(self.pic_size*0.8),(i.posy-0.5)*self.pic_size+self.pic_size/30,fill='white',outline='red'))
+            self.mobhp_c.append(self.canv.create_rectangle(i.posx*self.pic_size,(i.posy-0.5)*self.pic_size,i.posx*self.pic_size+(self.pic_size*0.8)*(i.health/i.maxhealth),(i.posy-0.5)*self.pic_size+self.pic_size/30,fill='red',outline='red'))
             
     def draw_gui(self,plr,curfpos,wrd,qposes):
+        return
         self.canv.create_text((610,2),text="Moves log",anchor='nw')
         self.msgboximg=tkinter.PhotoImage(file='images/gui/msg.png')
         self.msgboxic=self.canv.create_image((600,20),image=self.msgboximg,anchor='nw')
@@ -113,6 +115,7 @@ class Drawing:
 
 
     def draw_minimap(self,wrd,curfpos,qposes):
+        return
         mpos = (700,500)
         mmsize=8
         offset = (curfpos[0]*mmsize,curfpos[1]*mmsize)
@@ -180,9 +183,10 @@ class Drawing:
         self.psprite = ImageTk.PhotoImage(iimg)        
         pposx = curf.pposx
         pposy = curf.pposy
-        self.plabel=self.canv.create_image(((pposx-0.5)*self.pic_size,(pposy-1)*self.pic_size),image=self.psprite,tags='player',anchor='nw')
+        self.plabel=self.canv.create_image(((pposx)*self.pic_size,(pposy-0.5)*self.pic_size),image=self.psprite,tags='player',anchor='nw')
 		
     def edit_msg(self,text):
+        return
         if(text!=''):
             self.msg_log.append(text)
         if(len(self.msg_log)>6):

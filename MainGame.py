@@ -15,7 +15,7 @@ class MainGame:
         self.qposes = []
         self.curquests = []
         self.state='move'
-        self.curf=Field(30,20,1,1)
+        self.curf=Field(32,18,1,1)
         self.world={(0,0):self.curf}
         self.curfpos=(0,0)
         self.player = Player()
@@ -73,7 +73,7 @@ class MainGame:
                 vil=0
             else:
                 vil = 2
-            fld=Field(30,20,vil,ztype)
+            fld=Field(32,18,vil,ztype)
             if(vil==0 or ztype!=1):
                 self.create_mobs(fld)
         if(side==(0,1)):
