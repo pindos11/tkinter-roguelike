@@ -25,6 +25,7 @@ class Player:
         self.upd_stats()
         self.health=self.maxhealth
         self.move_dir = "(0000)"
+        self.leveluped = 0
 
     def set_master(self,master):
         self.master = master
@@ -52,46 +53,27 @@ class Player:
         self.exp+=amount
         self.exp = round(self.exp,2)
         if(self.exp>=self.nexp):
-            self.levelup()
+            self.leveluped = 1
             nx=self.nexp
             self.nexp+=self.level+5
             self.level+=1
             self.exp-=nx
             self.exp = round(self.exp,2)
-            self.upd_stats()
-            self.health+=self.level*2
-            if(self.health>=self.maxhealth):
-                self.health=self.maxhealth
             return('Welcome to level '+str(self.level)+'!')
         return('Gained '+str(amount)+' exp')
 
-    def levelup(self):
-        self.lvlup=tkinter.Toplevel(self.master)
-        self.lvlup.title("Choose charasteristic to upgrade")
-        self.lvlup.geometry('300x200+100+100')
-        self.charact=tkinter.IntVar()
-        stren = tkinter.Radiobutton(self.lvlup,variable=self.charact,text="Strength: +2 dmg +1% crit mul",value=1)
-        dex = tkinter.Radiobutton(self.lvlup,variable=self.charact,text="Dexterity +1% dodge chance +1% crit chance",value=2)
-        end = tkinter.Radiobutton(self.lvlup,variable=self.charact,text="Endurance +3 hp +0.5 armor",value=3)
-        stren.place(x=20,y=20)
-        dex.place(x=20,y=45)
-        end.place(x=20,y=70)
-        acbtn=tkinter.Button(self.lvlup,text='Accept',command=self.add_char)
-        acbtn.place(x=20,y=95)
-        self.lvlup.mainloop()
-        
-    def add_char(self):
-        to_add=self.charact.get()
-        if(to_add==1):
+    def lvlup_new(self,choice):
+        if(choice==0):
             self.nat_strength+=1
-        elif(to_add==2):
+        elif(choice==1):
             self.nat_dexterity+=1
-        elif(to_add==3):
+        elif(choice==2):
             self.nat_endurance+=1
-        else:
-            return(0)
-        self.lvlup.quit()
-        self.lvlup.destroy()
+        self.upd_stats()
+        self.health+=self.level*2
+        if(self.health>=self.maxhealth):
+            self.health=self.maxhealth
+        self.leveluped = 0
         
     def preset_chars(self):
         random.seed()

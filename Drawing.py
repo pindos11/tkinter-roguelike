@@ -1,6 +1,69 @@
 import tkinter
 from PIL import Image
 from PIL import ImageTk
+
+class Canvas_ui_element:
+    def __init__(self,elem_type,pos,content):
+        self.type = elem_type
+        self.px = pos[0]
+        self.py = pos[1]
+        self.data = content
+
+class Canvas_ui_object:
+    def __init__(self,canv,draw,pos,size,ui_type):
+        self.canv = canv
+        self.elements = []
+        self.tkobjs = []
+        self.draw = draw
+        self.px = pos[0]
+        self.py = pos[1]
+        self.sx = size[0]
+        self.sy = size[1]
+        self.img = []
+        self.utype = ui_type
+
+    def add_element(self,elem):
+        self.elements.append(elem)
+        return
+
+    def erase(self):
+        self.elements = []
+        for i in self.tkobjs:
+            self.canv.delete(i)
+        self.tkobjs = []
+        self.img = []
+
+    def display(self):
+        #self.canv.delete('all')
+        iimg = Image.open('images/gui/ui_object.png')
+        iimg = iimg.resize((self.sx,self.sy))
+        self.img.append(ImageTk.PhotoImage(iimg))
+        #print(self.px)
+        self.tkobjs.append(self.canv.create_image((self.px,self.py),image=self.img[-1],anchor='nw'))
+        #print(self.tkobjs[0])
+        for i in self.elements:
+            if i.type == 'text':
+                self.disp_text(i,self.px,self.py)
+            if i.type == 'frame':
+                self.disp_frame(i,self.px,self.py)
+        
+        for i in self.tkobjs:
+            self.canv.tag_raise(i,'all')
+
+    def disp_text(self,elem,x,y):
+        px = x+elem.px
+        py = y+elem.py
+        self.tkobjs.append(self.canv.create_text((px,py),text=elem.data[0],anchor='nw',font=('Helevtica',elem.data[1])))
+        return
+
+    def disp_frame(self,elem,x,y):
+        iimg = Image.open(elem.data[0])
+        iimg = iimg.resize((elem.data[1],elem.data[2]))
+        self.img.append(ImageTk.PhotoImage(iimg))
+        px = x+elem.px
+        py = y+elem.py
+        self.tkobjs.append(self.canv.create_image((px,py),image=self.img[-1],anchor='nw'))
+
 class Drawing:
     def __init__(self,curf,plr):
         self.mainwindow=tkinter.Tk()
@@ -16,6 +79,7 @@ class Drawing:
         self.msg_log=[]
         self.pic_size = self.win_hgt/curf.sizey
         self.pic_size = int(self.pic_size)
+        self.ui_drawn = 0
         self.draw_field(curf,plr)
         
 	
@@ -185,6 +249,55 @@ class Drawing:
         pposy = curf.pposy
         self.plabel=self.canv.create_image(((pposx)*self.pic_size,(pposy-0.5)*self.pic_size),image=self.psprite,tags='player',anchor='nw')
 		
+    def draw_char_ui(self,plr):
+        gui_width = int(self.win_len/5)
+        gui_height = int(gui_width*0.75)
+        elem_hgt = int(gui_height/10)
+        if self.ui_drawn==0:
+            elems = []
+            self.ui = Canvas_ui_object(self.canv,self,(10,10),(gui_width,gui_height),'info')
+            elems.append(Canvas_ui_element('text',(gui_width/4,elem_hgt*(len(elems)+1)),['Health: '+str(round(plr.health,1))+'/'+str(plr.maxhealth),14]))
+            #self.ui.add_element(elem1)
+            elems.append(Canvas_ui_element('text',(gui_width/4,elem_hgt*(len(elems)+1)),['Strength: '+str(plr.strength),14]))
+            elems.append(Canvas_ui_element('text',(gui_width/4,elem_hgt*(len(elems)+1)),['Dexterity: '+str(plr.dexterity),14]))
+            elems.append(Canvas_ui_element('text',(gui_width/4,elem_hgt*(len(elems)+1)),['Endurance: '+str(plr.endurance),14]))
+            elems.append(Canvas_ui_element('text',(gui_width/4,elem_hgt*(len(elems)+1)),['Exp '+str(plr.exp)+'/'+str(plr.nexp),14]))
+            elems.append(Canvas_ui_element('text',(gui_width/4,elem_hgt*(len(elems)+1)),['Level: '+str(plr.level),14]))
+            elems.append(Canvas_ui_element('text',(gui_width/4,elem_hgt*(len(elems)+1)),['Damage: '+str(plr.damage),14]))
+            elems.append(Canvas_ui_element('text',(gui_width/4,elem_hgt*(len(elems)+1)),['Armor: '+str(plr.armor),14]))
+            for i in elems:
+                self.ui.add_element(i)
+            
+            self.ui.display()
+            self.ui_drawn = 1
+        else:
+            if self.ui.utype != 'lvlup':
+                self.ui.erase()
+                self.ui_drawn = 0
+
+    def draw_lvlup_ui(self,framepos):
+        if self.ui_drawn==1:
+            self.ui.erase()
+        self.lvlup_framepos = framepos
+        self.ui_drawn = 1
+        gui_width = int(self.win_len/4)
+        gui_height = int(gui_width*0.75)
+        elem_hgt = int(gui_height/5)
+        self.ui = Canvas_ui_object(self.canv,self,(self.win_len/7,self.win_hgt/7),(gui_width,gui_height),'lvlup')
+        elems = []
+        elems.append(Canvas_ui_element('text',(gui_width/10,elem_hgt*(len(elems)+1)),['Strength: +2 dmg +1% crit mul',14]))
+        elems.append(Canvas_ui_element('text',(gui_width/10,elem_hgt*(len(elems)+1)),['Dexterity +1% dodge chance +1% crit chance',14]))
+        elems.append(Canvas_ui_element('text',(gui_width/10,elem_hgt*(len(elems)+1)),['Endurance +3 hp +0.5 armor',14]))
+        elems.append(Canvas_ui_element('text',(gui_width/10,elem_hgt*(len(elems)+1.3)),['Press F to accept',14]))
+        elems.append(Canvas_ui_element('frame',(gui_width/20,elem_hgt*(self.lvlup_framepos+0.6)),['images/gui/lvl_frame.png',int(gui_width*0.9),elem_hgt]))
+        for i in elems:
+            self.ui.add_element(i)  
+        self.ui.display()
+
+    def clear_lvlup_ui(self):
+        self.ui.erase()
+        self.ui_drawn = 0
+    
     def edit_msg(self,text):
         return
         if(text!=''):

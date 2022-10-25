@@ -191,11 +191,12 @@ class MainGame:
             self.upd_quest(tmobi.model)
             self.Drawing.edit_msg((tmobi.model+' is slain').capitalize())
             self.curf.kill_monster(tmobi)
-            self.unbind_moves()
-            text = self.player.add_exp(rewexp)
-            self.bind_moves()
+            self.player.add_exp(rewexp)
+            if(self.player.leveluped==1):
+                self.Drawing.draw_lvlup_ui(0)
+                return
             self.make_field((0,0))
-            self.Drawing.edit_msg(text)
+            #self.Drawing.edit_msg(text)
 
     def upd_quest(self,mob):
         for i in self.curquests:
@@ -303,6 +304,14 @@ OLOLO.'''
             npcposes.append((i.posx,i.posy))
         
         if(event.char=='w'):
+            if(self.Drawing.ui_drawn==1):
+                if(self.Drawing.ui.utype!='lvlup'):
+                    return
+                if(self.Drawing.lvlup_framepos > 0):
+                    self.Drawing.draw_lvlup_ui(self.Drawing.lvlup_framepos-1)
+                    return
+                else:
+                    return
             self.player.set_move_dir("(0002)")
             if(pposy-1<0):
                 self.make_field((0,-1))
@@ -319,6 +328,14 @@ OLOLO.'''
                 self.Drawing.draw_player(self.curf, self.player)
                 self.bind_moves()
         if(event.char=='s'):
+            if(self.Drawing.ui_drawn==1):
+                if(self.Drawing.ui.utype!='lvlup'):
+                    return
+                if(self.Drawing.lvlup_framepos < 2):
+                    self.Drawing.draw_lvlup_ui(self.Drawing.lvlup_framepos+1)
+                    return
+                else:
+                    return
             self.player.set_move_dir("(0000)")
             if(pposy+1>self.curf.sizey-1):
                 self.make_field((0,1))
@@ -336,6 +353,8 @@ OLOLO.'''
                 pposy = self.curf.pposy
                 self.Drawing.draw_player(self.curf, self.player)
         if(event.char=='a'):
+            if(self.Drawing.ui_drawn==1):
+                return
             self.player.set_move_dir("(0001)")
             if(pposx-1<0):
                 self.make_field((-1,0))
@@ -353,6 +372,8 @@ OLOLO.'''
                 pposy = self.curf.pposy
                 self.Drawing.draw_player(self.curf, self.player)
         if(event.char=='d'):
+            if(self.Drawing.ui_drawn==1):
+                return
             self.player.set_move_dir("(0003)")
             if(pposx+1>self.curf.sizex-1):
                 self.make_field((1,0))
@@ -478,8 +499,18 @@ OLOLO.'''
                             self.make_field((0,0))
                             self.Drawing.edit_msg('')
                             break
-        self.move_mobs()
+        if(event.char=='z'):
+            self.Drawing.draw_char_ui(self.player)
+            #self.Drawing.draw_lvlup_ui(0)
+        if(self.Drawing.ui_drawn==0):
+            self.move_mobs()
 
+    def process_ui_interact(self,event):
+        if(self.Drawing.ui_drawn==0 or self.Drawing.ui.utype!='lvlup'):
+            return
+        else:
+            self.player.lvlup_new(self.Drawing.lvlup_framepos)
+            self.Drawing.clear_lvlup_ui()
     
     def pick_item(self):
         if(self.choice.get()==0):
@@ -507,6 +538,8 @@ OLOLO.'''
         self.Drawing.mainwindow.bind('3',self.move)
         self.Drawing.mainwindow.bind('x',self.move)
         self.Drawing.mainwindow.bind('c',self.move)
+        self.Drawing.mainwindow.bind('z',self.move)
+        self.Drawing.mainwindow.bind('f',self.process_ui_interact)
 
     def unbind_moves(self):
         self.Drawing.mainwindow.unbind('w')
