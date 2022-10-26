@@ -12,6 +12,41 @@ class Item:
             self.generate_arm()
         if(itype=='utl'):
             self.generate_utl()
+
+    def get_own_desc(self):
+        result = []
+        text = self.name
+        result.append(text)
+        if self.itype=='wpn':
+            text = 'Damage: '+str(self.in_damage)+'+'+str(self.add_damage)
+            result.append(text)
+            text = 'Strength: '+str(self.in_strength)+'+'+str(self.add_strength)
+            result.append(text)
+            text = 'Dexterity: '+str(self.in_dexterity)+'+'+str(self.add_dexterity)
+            result.append(text)
+        if self.itype=='arm':
+            text = 'Armor: '+str(self.in_armor)+'+'+str(self.add_armor)
+            result.append(text)
+            text = 'Health: '+str(self.in_health)+'+'+str(self.add_health)
+            result.append(text)
+            text = 'Dexterity: '+str(self.in_dexterity)+'+'+str(self.add_dexterity)
+            result.append(text)
+            text = 'Endurance: '+str(self.in_endurance)+'+'+str(self.add_endurance)
+            result.append(text)
+        if self.itype=='utl':
+            text = 'Regen: '+str(self.in_regen)+'+'+str(self.add_regen)
+            result.append(text)
+            text = 'Max charges: '+str(self.max_charges)
+            result.append(text)
+            text = 'Passive properties:\n'
+            result.append(text)
+            text = 'Dexterity: '+str(self.add_dexterity)
+            result.append(text)
+            text = 'Endurance: '+str(self.add_endurance)
+            result.append(text)
+        return result
+            
+    
     def generate_wpn(self):
         prefixes = ['Bitter','Convex','Curved','Hard','Hot','Narrow','Strong','Unpleasant','Awful']
         suffixes = ['evil','loyalty','justice','despair','honor','pain','faith','hate','courage']

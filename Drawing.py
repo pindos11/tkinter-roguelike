@@ -297,6 +297,27 @@ class Drawing:
     def clear_lvlup_ui(self):
         self.ui.erase()
         self.ui_drawn = 0
+
+    def draw_picking_ui(self,texts,framepos):
+        if self.ui_drawn==1:
+            self.ui.erase()
+        self.pick_framepos = framepos
+        self.ui_drawn = 1
+        gui_width = int(self.win_len/3)
+        gui_height = int(gui_width)
+        elem_hgt = int(gui_height/16)
+        self.ui = Canvas_ui_object(self.canv,self,(self.win_len/7,self.win_hgt/7),(gui_width,gui_height),'pick_item')
+        elems = []
+        for i in texts[0]:
+            elems.append(Canvas_ui_element('text',(gui_width/10,elem_hgt*(len(elems)+1)),[i,14]))
+        for i in texts[1]:
+            elems.append(Canvas_ui_element('text',(gui_width/10,elem_hgt*(len(elems)+2)),[i,14]))
+        elems.append(Canvas_ui_element('frame',(gui_width/20,elem_hgt*(self.pick_framepos*(int(len(elems)/2)+1))),['images/gui/lvl_frame.png',int(gui_width*0.9),elem_hgt*(int(len(elems)/2)+1)]))
+        elems.append(Canvas_ui_element('text',(gui_width/10,elem_hgt*(len(elems)+1.3)),['Press F to accept',14]))
+        for i in elems:
+            self.ui.add_element(i)
+        self.ui.display()
+        
     
     def edit_msg(self,text):
         return

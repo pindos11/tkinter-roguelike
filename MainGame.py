@@ -43,7 +43,7 @@ class MainGame:
             #mobs.append('knight_f')
         elif(zone==2):
             mobs.append('skele_war')
-            #mobs.append('cobra')
+            mobs.append('cobra')
         ctr=0
         fld=field.cur_cond()
         while(ctr<num):
@@ -101,6 +101,9 @@ class MainGame:
             self.Drawing.draw_gui(self.player,self.curfpos,self.world,self.qposes)
             self.Drawing.draw_monsters(self.curf.ret_monsters())
             self.Drawing.draw_npcs(self.curf.npcs)
+            if(self.Drawing.ui_drawn==1):
+                if(self.Drawing.ui.utype=='lvlup'):
+                    self.Drawing.draw_lvlup_ui(self.Drawing.lvlup_framepos)
             self.Drawing.edit_msg('')
             if(side!=(0,0)):
                 self.Drawing.edit_msg("Entering in: "+str(curpos))
@@ -179,6 +182,8 @@ class MainGame:
             random.seed(random.randint(0,1000))
             if(random.randint(0,14)==14):
                 drop=1
+            else:
+                drop = 1
             if(drop==1):
                 dtype=random.randint(1,3)
                 if(dtype==1):
@@ -194,7 +199,6 @@ class MainGame:
             self.player.add_exp(rewexp)
             if(self.player.leveluped==1):
                 self.Drawing.draw_lvlup_ui(0)
-                return
             self.make_field((0,0))
             #self.Drawing.edit_msg(text)
 
@@ -305,53 +309,65 @@ OLOLO.'''
         
         if(event.char=='w'):
             if(self.Drawing.ui_drawn==1):
-                if(self.Drawing.ui.utype!='lvlup'):
-                    return
-                if(self.Drawing.lvlup_framepos > 0):
-                    self.Drawing.draw_lvlup_ui(self.Drawing.lvlup_framepos-1)
-                    return
+                if(self.Drawing.ui.utype=='lvlup'):
+                    if(self.Drawing.lvlup_framepos > 0):
+                        self.Drawing.draw_lvlup_ui(self.Drawing.lvlup_framepos-1)
+                    else:
+                        return
+                elif(self.Drawing.ui.utype=='pick_item'):
+                    if(self.Drawing.pick_framepos > 0):
+                        self.Drawing.draw_picking_ui(self.picktexts,self.Drawing.pick_framepos-1)
+                    else:
+                        return
                 else:
                     return
-            self.player.set_move_dir("(0002)")
-            if(pposy-1<0):
-                self.make_field((0,-1))
-                return
-            if(self.curf.cur_cond()[pposx][pposy-1].get_terrain() in self.curf.walkable):
-                if((pposx,pposy-1) in mposes):
-                    self.attack_mob((pposx,pposy-1))
-                    self.move_mobs()
+            else:
+                self.player.set_move_dir("(0002)")
+                if(pposy-1<0):
+                    self.make_field((0,-1))
                     return
-                if((pposx,pposy-1) in npcposes):
-                    self.interact_npc((pposx,pposy-1))
-                    return
-                self.curf.move_player(pposx,pposy-1)
-                self.Drawing.draw_player(self.curf, self.player)
-                self.bind_moves()
+                if(self.curf.cur_cond()[pposx][pposy-1].get_terrain() in self.curf.walkable):
+                    if((pposx,pposy-1) in mposes):
+                        self.attack_mob((pposx,pposy-1))
+                        self.move_mobs()
+                        return
+                    if((pposx,pposy-1) in npcposes):
+                        self.interact_npc((pposx,pposy-1))
+                        return
+                    self.curf.move_player(pposx,pposy-1)
+                    self.Drawing.draw_player(self.curf, self.player)
+                    self.bind_moves()
         if(event.char=='s'):
             if(self.Drawing.ui_drawn==1):
-                if(self.Drawing.ui.utype!='lvlup'):
-                    return
-                if(self.Drawing.lvlup_framepos < 2):
-                    self.Drawing.draw_lvlup_ui(self.Drawing.lvlup_framepos+1)
-                    return
+                if(self.Drawing.ui.utype=='lvlup'):
+                    if(self.Drawing.lvlup_framepos < 2):
+                        self.Drawing.draw_lvlup_ui(self.Drawing.lvlup_framepos+1)
+                    else:
+                        return
+                elif(self.Drawing.ui.utype=='pick_item'):
+                    if(self.Drawing.pick_framepos < 1):
+                        self.Drawing.draw_picking_ui(self.picktexts,self.Drawing.pick_framepos+1)
+                    else:
+                        return
                 else:
                     return
-            self.player.set_move_dir("(0000)")
-            if(pposy+1>self.curf.sizey-1):
-                self.make_field((0,1))
-                return
-            if(self.curf.cur_cond()[pposx][pposy+1].get_terrain() in self.curf.walkable):
-                if((pposx,pposy+1) in mposes):
-                    self.attack_mob((pposx,pposy+1))
-                    self.move_mobs()
+            else:
+                self.player.set_move_dir("(0000)")
+                if(pposy+1>self.curf.sizey-1):
+                    self.make_field((0,1))
                     return
-                if((pposx,pposy+1) in npcposes):
-                    self.interact_npc((pposx,pposy+1))
-                    return
-                self.curf.move_player(pposx,pposy+1)
-                pposx = self.curf.pposx
-                pposy = self.curf.pposy
-                self.Drawing.draw_player(self.curf, self.player)
+                if(self.curf.cur_cond()[pposx][pposy+1].get_terrain() in self.curf.walkable):
+                    if((pposx,pposy+1) in mposes):
+                        self.attack_mob((pposx,pposy+1))
+                        self.move_mobs()
+                        return
+                    if((pposx,pposy+1) in npcposes):
+                        self.interact_npc((pposx,pposy+1))
+                        return
+                    self.curf.move_player(pposx,pposy+1)
+                    pposx = self.curf.pposx
+                    pposy = self.curf.pposy
+                    self.Drawing.draw_player(self.curf, self.player)
         if(event.char=='a'):
             if(self.Drawing.ui_drawn==1):
                 return
@@ -435,9 +451,16 @@ OLOLO.'''
                     if(i.itype==nitype):
                         o_item=i
                         break
-                self.pick_thingw=tkinter.Toplevel(self.Drawing.mainwindow)
-                self.pick_thingw.title("Picking item")
-                self.pick_thingw.geometry('550x200+100+100')
+                #self.pick_thingw=tkinter.Toplevel(self.Drawing.mainwindow)
+                #self.pick_thingw.title("Picking item")
+                #self.pick_thingw.geometry('550x200+100+100')
+                self.picktexts = []
+                self.picktexts.append(o_item.get_own_desc())
+                self.picktexts.append(n_item.get_own_desc())
+                self.o_item=o_item
+                self.n_item=n_item
+                self.Drawing.draw_picking_ui(self.picktexts,0)
+                return
                 o_name=o_item.name
                 n_name=n_item.name
                 if(o_item.itype=='wpn'):
@@ -499,18 +522,25 @@ OLOLO.'''
                             self.make_field((0,0))
                             self.Drawing.edit_msg('')
                             break
-        if(event.char=='z'):
+        if(event.char=='v'):
             self.Drawing.draw_char_ui(self.player)
             #self.Drawing.draw_lvlup_ui(0)
         if(self.Drawing.ui_drawn==0):
             self.move_mobs()
 
     def process_ui_interact(self,event):
-        if(self.Drawing.ui_drawn==0 or self.Drawing.ui.utype!='lvlup'):
+        if(self.Drawing.ui_drawn==0):
             return
-        else:
+        if (self.Drawing.ui.utype=='lvlup'):
             self.player.lvlup_new(self.Drawing.lvlup_framepos)
             self.Drawing.clear_lvlup_ui()
+        if (self.Drawing.ui.utype=='pick_item'):
+            to_drop=self.player.give_item(self.n_item)
+            pposx = self.curf.pposx
+            pposy = self.curf.pposy
+            self.curf.cur_cond()[pposx][pposy].place_loot(to_drop)
+            self.Drawing.draw_char_ui(self.player)
+            self.make_field((0,0))
     
     def pick_item(self):
         if(self.choice.get()==0):
@@ -538,7 +568,7 @@ OLOLO.'''
         self.Drawing.mainwindow.bind('3',self.move)
         self.Drawing.mainwindow.bind('x',self.move)
         self.Drawing.mainwindow.bind('c',self.move)
-        self.Drawing.mainwindow.bind('z',self.move)
+        self.Drawing.mainwindow.bind('v',self.move)
         self.Drawing.mainwindow.bind('f',self.process_ui_interact)
 
     def unbind_moves(self):
