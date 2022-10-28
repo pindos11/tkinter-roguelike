@@ -35,12 +35,12 @@ class MainGame:
         mobs=[]
         if(zone==1):
             #mobs.append('goblin')
-            #mobs.append('rat')
+            mobs.append('slime')
 
             mobs.append('skele_war')
         elif(zone==3):
             mobs.append('drago')
-            #mobs.append('knight_f')
+            mobs.append('knight_f')
         elif(zone==2):
             mobs.append('skele_war')
             mobs.append('cobra')
@@ -535,10 +535,11 @@ OLOLO.'''
             self.player.lvlup_new(self.Drawing.lvlup_framepos)
             self.Drawing.clear_lvlup_ui()
         if (self.Drawing.ui.utype=='pick_item'):
-            to_drop=self.player.give_item(self.n_item)
-            pposx = self.curf.pposx
-            pposy = self.curf.pposy
-            self.curf.cur_cond()[pposx][pposy].place_loot(to_drop)
+            if self.Drawing.pick_framepos == 1:
+                to_drop=self.player.give_item(self.n_item)
+                pposx = self.curf.pposx
+                pposy = self.curf.pposy
+                self.curf.cur_cond()[pposx][pposy].place_loot(to_drop)
             self.Drawing.draw_char_ui(self.player)
             self.make_field((0,0))
     
