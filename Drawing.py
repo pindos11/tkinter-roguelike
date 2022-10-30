@@ -114,6 +114,23 @@ class Drawing:
             self.mobhp_c.append(self.canv.create_rectangle(i.posx*self.pic_size,(i.posy-0.5)*self.pic_size,i.posx*self.pic_size+(self.pic_size*0.8)*(i.health/i.maxhealth),(i.posy-0.5)*self.pic_size+self.pic_size/30,fill='red',outline='red'))
             
     def draw_gui(self,plr,curfpos,wrd,qposes):
+        elem_hgt = int(self.win_hgt/40)
+        #hp
+        self.hpimg = Image.open('images/gui/hp_sign.png')
+        self.hpimg = self.hpimg.resize((elem_hgt,elem_hgt))
+        self.hpimg = ImageTk.PhotoImage(self.hpimg)
+        self.hpimg_canv = self.canv.create_image((30,30),image=self.hpimg,anchor='nw')
+        hp_pc = plr.maxhealth/100
+        hp_value = int(plr.health/hp_pc)
+        self.hp_text = self.canv.create_text((35+elem_hgt,30),text=str(hp_value)+'%',anchor='nw',font=('Helevtica',14,'bold'),fill='red')
+        #charges
+        for i in plr.inventory:
+            if i.itype=='utl':
+                self.boimg = Image.open('images/gui/charges.png')
+                self.boimg = self.boimg.resize((elem_hgt,elem_hgt))
+                self.boimg = ImageTk.PhotoImage(self.boimg)
+                self.bimg_canv = self.canv.create_image((30,35+elem_hgt),image=self.boimg,anchor='nw')
+                self.charge_text=self.canv.create_text((35+elem_hgt,35+elem_hgt),text=i.charges,anchor='nw',font=('Helevtica',14,'bold'),fill='red')
         return
         self.canv.create_text((610,2),text="Moves log",anchor='nw')
         self.msgboximg=tkinter.PhotoImage(file='images/gui/msg.png')
